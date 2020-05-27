@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传 | 张顺霖的个人博客</title>
+    <meta name="generator" content="VuePress 1.4.1">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="description" content="程序人生">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <link rel="preload" href="/assets/css/0.styles.d1accbf9.css" as="style"><link rel="preload" href="/assets/js/app.966359c4.js" as="script"><link rel="preload" href="/assets/js/3.ac7357be.js" as="script"><link rel="preload" href="/assets/js/1.cb98b3b4.js" as="script"><link rel="preload" href="/assets/js/14.63ad02eb.js" as="script"><link rel="prefetch" href="/assets/js/10.7a0546ff.js"><link rel="prefetch" href="/assets/js/11.670aaf90.js"><link rel="prefetch" href="/assets/js/12.95e98a78.js"><link rel="prefetch" href="/assets/js/13.fa58b896.js"><link rel="prefetch" href="/assets/js/15.095615be.js"><link rel="prefetch" href="/assets/js/16.5958944c.js"><link rel="prefetch" href="/assets/js/17.d49be15c.js"><link rel="prefetch" href="/assets/js/18.dcb1269c.js"><link rel="prefetch" href="/assets/js/19.b0c8476e.js"><link rel="prefetch" href="/assets/js/20.d0b298df.js"><link rel="prefetch" href="/assets/js/21.4336a1fc.js"><link rel="prefetch" href="/assets/js/22.b2b9af3c.js"><link rel="prefetch" href="/assets/js/23.1d8286cf.js"><link rel="prefetch" href="/assets/js/24.27d58b6d.js"><link rel="prefetch" href="/assets/js/4.d77f5c59.js"><link rel="prefetch" href="/assets/js/5.81466364.js"><link rel="prefetch" href="/assets/js/6.a3864b90.js"><link rel="prefetch" href="/assets/js/7.bce19319.js"><link rel="prefetch" href="/assets/js/8.4cdeb7f2.js"><link rel="prefetch" href="/assets/js/9.30eb187a.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.d1accbf9.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div><div class="theme-container" data-v-319dd33c><div data-v-319dd33c><div id="loader-wrapper" class="loading-wrapper" data-v-4b73742e data-v-319dd33c data-v-319dd33c><div class="loader-main" data-v-4b73742e><div data-v-4b73742e></div><div data-v-4b73742e></div><div data-v-4b73742e></div><div data-v-4b73742e></div></div> <!----> <!----></div> <div class="password-shadow password-wrapper-out" style="display:none;" data-v-1e2a0cc0 data-v-319dd33c data-v-319dd33c><h3 class="title" style="display:none;" data-v-1e2a0cc0 data-v-1e2a0cc0>张顺霖的个人博客</h3> <!----> <label id="box" class="inputBox" style="display:none;" data-v-1e2a0cc0 data-v-1e2a0cc0><input type="password" value="" data-v-1e2a0cc0> <span data-v-1e2a0cc0>Konck! Knock!</span> <button data-v-1e2a0cc0>OK</button></label> <div class="footer" style="display:none;" data-v-1e2a0cc0 data-v-1e2a0cc0><span data-v-1e2a0cc0><i class="iconfont reco-theme" data-v-1e2a0cc0></i> <a target="blank" href="https://vuepress-theme-reco.recoluan.com" data-v-1e2a0cc0>vuePress-theme-reco</a></span> <span data-v-1e2a0cc0><i class="iconfont reco-copyright" data-v-1e2a0cc0></i> <a data-v-1e2a0cc0><span data-v-1e2a0cc0>张顺霖</span>
+            
+          <span data-v-1e2a0cc0>2020 - </span>
+          2020
+        </a></span></div></div> <div class="hide" data-v-319dd33c><header class="navbar" data-v-319dd33c><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/logo.jpeg" alt="张顺霖的个人博客" class="logo"> <span class="site-name">张顺霖的个人博客</span></a> <div class="links"><div class="color-picker"><a class="color-button"><i class="iconfont reco-color"></i></a> <div class="color-picker-menu" style="display:none;"><div class="mode-options"><h4 class="title">Choose mode</h4> <ul class="color-mode-options"><li class="dark">dark</li><li class="auto active">auto</li><li class="light">light</li></ul></div></div></div> <div class="search-box"><i class="iconfont reco-search"></i> <input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link"><i class="iconfont reco-home"></i>
+  首页
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-category"></i>
+      分类
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/categories/git/" class="nav-link"><i class="iconfont undefined"></i>
+  git
+</a></li><li class="dropdown-item"><!----> <a href="/categories/linux/" class="nav-link"><i class="iconfont undefined"></i>
+  linux
+</a></li><li class="dropdown-item"><!----> <a href="/categories/mysql/" class="nav-link"><i class="iconfont undefined"></i>
+  mysql
+</a></li><li class="dropdown-item"><!----> <a href="/categories/vue/" class="nav-link"><i class="iconfont undefined"></i>
+  vue
+</a></li><li class="dropdown-item"><!----> <a href="/categories/总结/" class="nav-link"><i class="iconfont undefined"></i>
+  总结
+</a></li><li class="dropdown-item"><!----> <a href="/categories/心得/" class="nav-link"><i class="iconfont undefined"></i>
+  心得
+</a></li><li class="dropdown-item"><!----> <a href="/categories/java/" class="nav-link"><i class="iconfont undefined"></i>
+  java
+</a></li></ul></div></div><div class="nav-item"><a href="/tag/" class="nav-link"><i class="iconfont reco-tag"></i>
+  标签
+</a></div><div class="nav-item"><a href="/timeline/" class="nav-link"><i class="iconfont reco-date"></i>
+  时间轴
+</a></div> <!----></nav></div></header> <div class="sidebar-mask" data-v-319dd33c></div> <aside class="sidebar" data-v-319dd33c><div class="personal-info-wrapper" data-v-6c8ffc9c><img src="/tx.jpeg" alt="author-avatar" class="personal-img" data-v-6c8ffc9c> <h3 class="name" data-v-6c8ffc9c>
+    张顺霖
+  </h3> <div class="num" data-v-6c8ffc9c><div data-v-6c8ffc9c><h3 data-v-6c8ffc9c>11</h3> <h6 data-v-6c8ffc9c>文章</h6></div> <div data-v-6c8ffc9c><h3 data-v-6c8ffc9c>8</h3> <h6 data-v-6c8ffc9c>标签</h6></div></div> <hr data-v-6c8ffc9c></div> <nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link"><i class="iconfont reco-home"></i>
+  首页
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-category"></i>
+      分类
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/categories/git/" class="nav-link"><i class="iconfont undefined"></i>
+  git
+</a></li><li class="dropdown-item"><!----> <a href="/categories/linux/" class="nav-link"><i class="iconfont undefined"></i>
+  linux
+</a></li><li class="dropdown-item"><!----> <a href="/categories/mysql/" class="nav-link"><i class="iconfont undefined"></i>
+  mysql
+</a></li><li class="dropdown-item"><!----> <a href="/categories/vue/" class="nav-link"><i class="iconfont undefined"></i>
+  vue
+</a></li><li class="dropdown-item"><!----> <a href="/categories/总结/" class="nav-link"><i class="iconfont undefined"></i>
+  总结
+</a></li><li class="dropdown-item"><!----> <a href="/categories/心得/" class="nav-link"><i class="iconfont undefined"></i>
+  心得
+</a></li><li class="dropdown-item"><!----> <a href="/categories/java/" class="nav-link"><i class="iconfont undefined"></i>
+  java
+</a></li></ul></div></div><div class="nav-item"><a href="/tag/" class="nav-link"><i class="iconfont reco-tag"></i>
+  标签
+</a></div><div class="nav-item"><a href="/timeline/" class="nav-link"><i class="iconfont reco-date"></i>
+  时间轴
+</a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/views/git/2020/05/02/%E3%80%90%E5%B9%B2%E8%B4%A7%E3%80%91%E4%BA%94%E5%88%86%E9%92%9F%E6%90%9E%E5%AE%9A%20git%E4%B8%8B%E8%BD%BD%E2%86%92%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE%E2%86%92%E7%94%9F%E6%88%90%E5%85%AC%E9%92%A5%E9%85%8D%E7%BD%AEgithub%E2%86%92%E5%AE%9E%E7%8E%B0%E4%B8%8B%E6%8B%89%E4%B8%8A%E4%BC%A0.html#git和github和gitee的区别。" class="sidebar-link">git和github和gitee的区别。</a><ul class="sidebar-sub-headers"></ul></li><li><a href="/views/git/2020/05/02/%E3%80%90%E5%B9%B2%E8%B4%A7%E3%80%91%E4%BA%94%E5%88%86%E9%92%9F%E6%90%9E%E5%AE%9A%20git%E4%B8%8B%E8%BD%BD%E2%86%92%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE%E2%86%92%E7%94%9F%E6%88%90%E5%85%AC%E9%92%A5%E9%85%8D%E7%BD%AEgithub%E2%86%92%E5%AE%9E%E7%8E%B0%E4%B8%8B%E6%8B%89%E4%B8%8A%E4%BC%A0.html#下载git并且安装。" class="sidebar-link">下载git并且安装。</a><ul class="sidebar-sub-headers"></ul></li><li><a href="/views/git/2020/05/02/%E3%80%90%E5%B9%B2%E8%B4%A7%E3%80%91%E4%BA%94%E5%88%86%E9%92%9F%E6%90%9E%E5%AE%9A%20git%E4%B8%8B%E8%BD%BD%E2%86%92%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE%E2%86%92%E7%94%9F%E6%88%90%E5%85%AC%E9%92%A5%E9%85%8D%E7%BD%AEgithub%E2%86%92%E5%AE%9E%E7%8E%B0%E4%B8%8B%E6%8B%89%E4%B8%8A%E4%BC%A0.html#git基础配置，生成公钥配置到github。" class="sidebar-link">git基础配置，生成公钥配置到github。</a><ul class="sidebar-sub-headers"></ul></li><li><a href="/views/git/2020/05/02/%E3%80%90%E5%B9%B2%E8%B4%A7%E3%80%91%E4%BA%94%E5%88%86%E9%92%9F%E6%90%9E%E5%AE%9A%20git%E4%B8%8B%E8%BD%BD%E2%86%92%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE%E2%86%92%E7%94%9F%E6%88%90%E5%85%AC%E9%92%A5%E9%85%8D%E7%BD%AEgithub%E2%86%92%E5%AE%9E%E7%8E%B0%E4%B8%8B%E6%8B%89%E4%B8%8A%E4%BC%A0.html#下拉项目，更新至github。" class="sidebar-link">下拉项目，更新至github。</a><ul class="sidebar-sub-headers"></ul></li></ul></section></li></ul> </aside> <div class="password-shadow password-wrapper-in" style="display:none;" data-v-1e2a0cc0 data-v-319dd33c><h3 class="title" style="display:none;" data-v-1e2a0cc0 data-v-1e2a0cc0>【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传</h3> <!----> <label id="box" class="inputBox" style="display:none;" data-v-1e2a0cc0 data-v-1e2a0cc0><input type="password" value="" data-v-1e2a0cc0> <span data-v-1e2a0cc0>Konck! Knock!</span> <button data-v-1e2a0cc0>OK</button></label> <div class="footer" style="display:none;" data-v-1e2a0cc0 data-v-1e2a0cc0><span data-v-1e2a0cc0><i class="iconfont reco-theme" data-v-1e2a0cc0></i> <a target="blank" href="https://vuepress-theme-reco.recoluan.com" data-v-1e2a0cc0>vuePress-theme-reco</a></span> <span data-v-1e2a0cc0><i class="iconfont reco-copyright" data-v-1e2a0cc0></i> <a data-v-1e2a0cc0><span data-v-1e2a0cc0>张顺霖</span>
+            
+          <span data-v-1e2a0cc0>2020 - </span>
+          2020
+        </a></span></div></div> <div data-v-319dd33c><main class="page"><div class="page-title" style="display:none;"><h1>【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传</h1> <hr> <div data-v-484a899e><i class="iconfont reco-account" data-v-484a899e><span data-v-484a899e>张顺霖</span></i> <i class="iconfont reco-date" data-v-484a899e><span data-v-484a899e>2020-05-02</span></i> <!----> <i class="iconfont reco-tag tags" data-v-484a899e><span class="tag-item" data-v-484a899e>
+      玩转git
+    </span></i></div></div> <div class="theme-reco-content content__default" style="display:none;"><h1 id="【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传"><a href="#【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传" class="header-anchor">#</a> 【干货】五分钟搞定。git下载→基础配置→生成公钥配置github→实现下拉上传</h1> <h2 id="git和github和gitee的区别。"><a href="#git和github和gitee的区别。" class="header-anchor">#</a> git和github和gitee的区别。</h2> <div class="language- line-numbers-mode"><pre class="language-text"><code>在我们使用之前我们要明白工具的实质和作用，作为学java的我在最初接触JAVA和javascript的时候，一直以为他们有很大的关系。
+最后才明白他们俩半毛钱关系没有，在这里为新学Git的同学解惑，Git和Github以及Github的区别。
+
+								gitee/github → 工具 → 本地	（这个图很敷衍但是很明了，哈哈哈，箭头应该是双向的 从gitee/github到本地是拉取，反过来是推送）
+								
+Git和svn的最大的却别在于分布式 ，分布式的意思在于，原来的svn在开发的时候必须要联网。代码只在远程，而Git的分布式体现在
+本地和远程各有一个仓库，我们需要把代码放到本地的仓库，然后通过工具和远程的代码同步下就行了。
+由此我们由上面的简略图可以看的出来了，git 是同步的工具 而 Gitee / Github 是代码的远程托管的平台。
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br></div></div><h2 id="下载git并且安装。"><a href="#下载git并且安装。" class="header-anchor">#</a> 下载git并且安装。</h2> <p>下载很简单 <a href="https://git-scm.com/download/" target="_blank" rel="noopener noreferrer">https://git-scm.com/download/<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>,然后安装到没有中文目录的文件夹下，一直下一步就行了，甚是简单。主要在配置和命令上。<a href="www.baidu.com">git的命令总结和常规使用</a></p> <h2 id="git基础配置，生成公钥配置到github。"><a href="#git基础配置，生成公钥配置到github。" class="header-anchor">#</a> git基础配置，生成公钥配置到github。</h2> <div class="language- extra-class"><pre><code>git作为上传和下拉的工具，我们需要在gitee/github中配置我们那些电脑是自己人，所以我们就需要口令，远程（gitee/github）存一个，我们本机存一个这样校验就可以确定本机是谁了。
+</code></pre></div><p>步骤：
+1.配置用户名</p> <blockquote><div class="language- extra-class"><pre><code>$ git config --global user.name &quot;zhangsan&quot;
+2.配置邮箱 
+$ git config --global user.email &quot;xxxxxxx@qq.com&quot;
+3.查看配置
+$ git config --global --list
+4.生成秘钥   输入了命令一直按回车就好了。
+ssh-keygen -t rsa -C &quot;xxxxxxx@qq.com&quot;
+</code></pre></div></blockquote> <p><img src="https://img-blog.csdnimg.cn/2020021317082536.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">5.查看公钥
+在C盘的用户目录下 C:\Users\zhangsan.ssh  目录下的
+<img src="https://img-blog.csdnimg.cn/2020021317113647.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+使用记事本编辑 id_rsa.pub 将里面的内容复制粘贴到github或者gitee里设置里面。
+<img src="https://img-blog.csdnimg.cn/20200213171414117.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+标题随便起，公钥就放放到下面就好了。</p> <h2 id="下拉项目，更新至github。"><a href="#下拉项目，更新至github。" class="header-anchor">#</a> 下拉项目，更新至github。</h2> <p>1.新创建项目 创建一个 learnGit的公开仓库，并且初始化该仓库。
+<img src="https://img-blog.csdnimg.cn/20200213172018419.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p> <div class="language- extra-class"><pre><code>			创建完毕
+</code></pre></div><p><img src="https://img-blog.csdnimg.cn/20200213172125469.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+2.下拉仓库 下图为我们创建完成的仓库 我们点击  克隆/下载 那个棕黄色的按钮选择 SSH、和Https的都可以。
+<img src="https://img-blog.csdnimg.cn/20200213172359852.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+3.点击复制下载地址。打开安装好的git命令行工具。
+<img src="https://img-blog.csdnimg.cn/20200213172500513.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+在想要存放代码的地方右键，选择git bash 更为简单。
+<img src="https://img-blog.csdnimg.cn/20200213172641562.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+4.克隆代码。
+<img src="https://img-blog.csdnimg.cn/20200213172800486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+搞定！
+<img src="https://img-blog.csdnimg.cn/2020021317282168.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+5.新创建一个文件。Hello.txt
+<img src="https://img-blog.csdnimg.cn/20200213172912841.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+6.在刚才的那个命令行工具里。</p> <p>$ cd learnGit/
+$ git add Hello.txt
+$ git commit -m '创建Hello.txt文本文件'
+$ git push origin master</p> <p><img src="https://img-blog.csdnimg.cn/20200213173155195.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+此时 让我们输入 Gitee账号和密码。
+<img src="https://img-blog.csdnimg.cn/20200213173221266.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+输入完之后（第一次使用git会出现，以后就没有了）
+<img src="https://img-blog.csdnimg.cn/20200213173249854.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述">
+搞定！！
+<img src="https://img-blog.csdnimg.cn/20200213173337885.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNzkwNDU5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p></div> <footer class="page-edit" style="display:none;"><!----> <div class="last-updated"><span class="prefix">Last Updated: </span> <span class="time">5/2/2020, 11:09:45 AM</span></div></footer> <!----></main> <!----> <div style="display:none;" data-v-319dd33c data-v-319dd33c><div class="comments-wrapper" data-v-319dd33c><!----></div></div></div></div></div></div></div><div class="global-ui"><div class="back-to-ceiling" style="right:1rem;bottom:6rem;width:2.5rem;height:2.5rem;border-radius:.25rem;line-height:2.5rem;display:none;" data-v-a81d141e data-v-a81d141e><svg t="1574745035067" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5404" class="icon" data-v-a81d141e><path d="M526.60727968 10.90185116a27.675 27.675 0 0 0-29.21455937 0c-131.36607665 82.28402758-218.69155461 228.01873535-218.69155402 394.07834331a462.20625001 462.20625001 0 0 0 5.36959153 69.94390903c1.00431239 6.55289093-0.34802892 13.13561351-3.76865779 18.80351572-32.63518765 54.11355614-51.75690182 118.55860487-51.7569018 187.94566865a371.06718723 371.06718723 0 0 0 11.50484808 91.98906777c6.53300375 25.50556257 41.68394495 28.14064038 52.69160883 4.22606766 17.37162448-37.73630017 42.14135425-72.50938081 72.80769204-103.21549295 2.18761121 3.04276886 4.15646224 6.24463696 6.40373557 9.22774369a1871.4375 1871.4375 0 0 0 140.04691725 5.34970492 1866.36093723 1866.36093723 0 0 0 140.04691723-5.34970492c2.24727335-2.98310674 4.21612437-6.18497483 6.3937923-9.2178004 30.66633723 30.70611158 55.4360664 65.4791928 72.80769147 103.21549355 11.00766384 23.91457269 46.15860503 21.27949489 52.69160879-4.22606768a371.15156223 371.15156223 0 0 0 11.514792-91.99901164c0-69.36717486-19.13165746-133.82216804-51.75690182-187.92578088-3.42062944-5.66790279-4.76302748-12.26056868-3.76865837-18.80351632a462.20625001 462.20625001 0 0 0 5.36959269-69.943909c-0.00994388-166.08943902-87.32547796-311.81420293-218.6915546-394.09823051zM605.93803103 357.87693858a93.93749974 93.93749974 0 1 1-187.89594924 6.1e-7 93.93749974 93.93749974 0 0 1 187.89594924-6.1e-7z" p-id="5405" data-v-a81d141e></path><path d="M429.50777625 765.63860547C429.50777625 803.39355007 466.44236686 1000.39046097 512.00932183 1000.39046097c45.56695499 0 82.4922232-197.00623328 82.5015456-234.7518555 0-37.75494459-36.9345906-68.35043303-82.4922232-68.34111062-45.57627738-0.00932239-82.52019037 30.59548842-82.51086798 68.34111062z" p-id="5406" data-v-a81d141e></path></svg></div></div></div>
+    <script src="/assets/js/app.966359c4.js" defer></script><script src="/assets/js/3.ac7357be.js" defer></script><script src="/assets/js/1.cb98b3b4.js" defer></script><script src="/assets/js/14.63ad02eb.js" defer></script>
+  </body>
+</html>
