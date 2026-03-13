@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Processing Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative; /* 确保定位上下文 */
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            z-index: 100; /* 确保按钮在最上层 */
+        }
+
+        .lang-switch:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            display: flex;
+            flex-direction: row;
+            min-height: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+        }
+
+        .panel {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-panel {
+            border-right: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .input-panel {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .char-count {
+            display: flex;
+            gap: 15px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .info-text {
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="lang-switch" onclick="toggleLanguage()">EN/中文</button>
+            <h1 id="pageTitle">JSON Processing Tool</h1>
+            <p id="pageSubtitle">Format, Minify, Escape and Unescape JSON strings</p>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="formatJSON()">📋 <span id="formatBtn">Format</span></button>
+            <button class="btn btn-secondary" onclick="minifyJSON()">_compress_ <span id="minifyBtn">Minify</span></button>
+            <button class="btn btn-success" onclick="escapeText()">\" \" <span id="escapeBtn">Escape</span></button>
+            <button class="btn btn-danger" onclick="unescapeText()">\" \" <span id="unescapeBtn">Unescape</span></button>
+            <button class="btn btn-primary" onclick="copyResult()">📋 <span id="copyBtn">Copy</span></button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ <span id="clearBtn">Clear</span></button>
+        </div>
+
+        <div class="content">
+            <div class="panel input-panel">
+                <label class="panel-title" id="inputLabel">Input:</label>
+                <textarea id="inputArea" placeholder="Paste your JSON or text here..."></textarea>
+                <div class="info-text" id="inputInfo">Enter any JSON string or plain text for processing</div>
+            </div>
+            
+            <div class="panel output-panel">
+                <label class="panel-title" id="outputLabel">Output:</label>
+                <textarea id="outputArea" readonly></textarea>
+                <div class="info-text" id="outputInfo">Processed result will appear here</div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="char-count">
+                <span id="inputChars">Input: 0 chars</span>
+                <span id="outputChars">Output: 0 chars</span>
+            </div>
+            <div id="statusMessage">Ready</div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Language state management
+        let currentLanguage = 'en';
+        
+        // Text resources for both languages
+        const texts = {
+            en: {
+                pageTitle: 'JSON Processing Tool',
+                pageSubtitle: 'Format, Minify, Escape and Unescape JSON strings',
+                formatBtn: 'Format',
+                minifyBtn: 'Minify',
+                escapeBtn: 'Escape',
+                unescapeBtn: 'Unescape',
+                copyBtn: 'Copy',
+                clearBtn: 'Clear',
+                inputLabel: 'Input:',
+                outputLabel: 'Output:',
+                inputInfo: 'Enter any JSON string or plain text for processing',
+                outputInfo: 'Processed result will appear here',
+                inputChars: 'Input: ',
+                outputChars: 'Output: ',
+                statusReady: 'Ready',
+                statusFormatted: 'JSON formatted successfully',
+                statusMinified: 'JSON minified successfully',
+                statusEscaped: 'Text escaped successfully',
+                statusUnescaped: 'Text unescaped successfully',
+                statusCopied: 'Copied to clipboard!',
+                statusError: 'Error occurred',
+                errorMessage: 'Invalid JSON format: ',
+                notificationSuccess: 'Success!',
+                notificationError: 'Error!',
+                invalidJSON: 'Invalid JSON format detected',
+                copiedToClipboard: 'Copied to clipboard!'
+            },
+            zh: {
+                pageTitle: 'JSON处理工具',
+                pageSubtitle: '格式化、压缩、转义和去转义JSON字符串',
+                formatBtn: '格式化',
+                minifyBtn: '压缩',
+                escapeBtn: '转义',
+                unescapeBtn: '去转义',
+                copyBtn: '复制',
+                clearBtn: '清空',
+                inputLabel: '输入：',
+                outputLabel: '输出：',
+                inputInfo: '在此处粘贴您的JSON或文本...',
+                outputInfo: '处理结果将显示在这里',
+                inputChars: '输入：',
+                outputChars: '输出：',
+                statusReady: '就绪',
+                statusFormatted: 'JSON格式化成功',
+                statusMinified: 'JSON压缩成功',
+                statusEscaped: '文本转义成功',
+                statusUnescaped: '文本去转义成功',
+                statusCopied: '已复制到剪贴板！',
+                statusError: '发生错误',
+                errorMessage: '无效的JSON格式：',
+                notificationSuccess: '成功！',
+                notificationError: '错误！',
+                invalidJSON: '检测到无效的JSON格式',
+                copiedToClipboard: '已复制到剪贴板！'
+            }
+        };
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+            setupEventListeners();
+        });
+
+        // Set up event listeners for character counting
+        function setupEventListeners() {
+            const inputArea = document.getElementById('inputArea');
+            const outputArea = document.getElementById('outputArea');
+            
+            inputArea.addEventListener('input', updateCharCounts);
+            outputArea.addEventListener('input', updateCharCounts); // For manual changes if needed
+            
+            // Initial count update
+            updateCharCounts();
+        }
+
+        // Update character counts in status bar
+        function updateCharCounts() {
+            const inputArea = document.getElementById('inputArea');
+            const outputArea = document.getElementById('outputArea');
+            
+            document.getElementById('inputChars').textContent = 
+                texts[currentLanguage].inputChars + inputArea.value.length + ' chars';
+            document.getElementById('outputChars').textContent = 
+                texts[currentLanguage].outputChars + outputArea.value.length + ' chars';
+        }
+
+        // Toggle between English and Chinese
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+            updateLanguage();
+        }
+
+        // Update all UI text based on current language
+        function updateLanguage() {
+            const elements = [
+                'pageTitle', 'pageSubtitle', 'formatBtn', 'minifyBtn', 'escapeBtn', 
+                'unescapeBtn', 'copyBtn', 'clearBtn', 'inputLabel', 'outputLabel',
+                'inputInfo', 'outputInfo'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = texts[currentLanguage][id];
+                }
+            });
+            
+            // Update status message if it's a static one
+            const statusElement = document.getElementById('statusMessage');
+            if (statusElement && statusElement.textContent === texts[currentLanguage === 'en' ? 'zh' : 'en'].statusReady) {
+                statusElement.textContent = texts[currentLanguage].statusReady;
+            }
+        }
+
+        // Format JSON with proper indentation
+        function formatJSON() {
+            try {
+                const input = document.getElementById('inputArea').value.trim();
+                
+                if (!input) {
+                    showNotification(texts[currentLanguage].invalidJSON, 'error');
+                    document.getElementById('statusMessage').textContent = texts[currentLanguage].statusError;
+                    return;
+                }
+                
+                const parsed = JSON.parse(input);
+                const formatted = JSON.stringify(parsed, null, 2);
+                
+                document.getElementById('outputArea').value = formatted;
+                showNotification(texts[currentLanguage].statusFormatted, 'success');
+                document.getElementById('statusMessage').textContent = texts[currentLanguage].statusFormatted;
+                
+            } catch (error) {
+                const errorMsg = texts[currentLanguage].errorMessage + error.message;
+                document.getElementById('outputArea').value = errorMsg;
+                showNotification(texts[currentLanguage].invalidJSON, 'error');
+                document.getElementById('statusMessage').textContent = texts[currentLanguage].statusError;
+            }
+            updateCharCounts();
+        }
+
+        // Minify JSON by removing whitespace
+        function minifyJSON() {
+            try {
+                const input = document.getElementById('inputArea').value.trim();
+                
+                if (!input) {
+                    showNotification(texts[currentLanguage].invalidJSON, 'error');
+                    document.getElementById('statusMessage').textContent = texts[currentLanguage].statusError;
+                    return;
+                }
+                
+                const parsed = JSON.parse(input);
+                const minified = JSON.stringify(parsed);
+                
+                document.getElementById('outputArea').value = minified;
+                showNotification(texts[currentLanguage].statusMinified, 'success');
+                document.getElementById('statusMessage').textContent = texts[currentLanguage].statusMinified;
+                
+            } catch (error) {
+                const errorMsg = texts[currentLanguage].errorMessage + error.message;
+                document.getElementById('outputArea').value = errorMsg;
+                showNotification(texts[currentLanguage].invalidJSON, 'error');
+                document.getElementById('statusMessage').textContent = texts[currentLanguage].statusError;
+            }
+            updateCharCounts();
+        }
+
+        // Escape special characters in text
+        function escapeText() {
+            const input = document.getElementById('inputArea').value;
+            // Properly escape text for use as a JSON string value
+            const escaped = JSON.stringify(input).slice(1, -1); // Remove surrounding quotes
+            
+            document.getElementById('outputArea').value = escaped;
+            showNotification(texts[currentLanguage].statusEscaped, 'success');
+            document.getElementById('statusMessage').textContent = texts[currentLanguage].statusEscaped;
+            updateCharCounts();
+        }
+
+        // Unescape escaped text
+        function unescapeText() {
+            const input = document.getElementById('inputArea').value;
+            try {
+                // Properly unescape text by wrapping in quotes and parsing
+                const unescaped = JSON.parse('"' + input + '"');
+                
+                document.getElementById('outputArea').value = unescaped;
+                showNotification(texts[currentLanguage].statusUnescaped, 'success');
+                document.getElementById('statusMessage').textContent = texts[currentLanguage].statusUnescaped;
+            } catch (error) {
+                document.getElementById('outputArea').value = texts[currentLanguage].errorMessage + error.message;
+                showNotification(texts[currentLanguage].invalidJSON, 'error');
+                document.getElementById('statusMessage').textContent = texts[currentLanguage].statusError;
+            }
+            updateCharCounts();
+        }
+
+        // Copy output to clipboard
+        function copyResult() {
+            const outputArea = document.getElementById('outputArea');
+            outputArea.select();
+            outputArea.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification(texts[currentLanguage].copiedToClipboard, 'success');
+                    document.getElementById('statusMessage').textContent = texts[currentLanguage].statusCopied;
+                } else {
+                    throw new Error('Copy command failed');
+                }
+            } catch (err) {
+                // Fallback method for modern browsers
+                navigator.clipboard.writeText(outputArea.value)
+                    .then(() => {
+                        showNotification(texts[currentLanguage].copiedToClipboard, 'success');
+                        document.getElementById('statusMessage').textContent = texts[currentLanguage].statusCopied;
+                    })
+                    .catch(() => {
+                        showNotification('Failed to copy!', 'error');
+                        document.getElementById('statusMessage').textContent = texts[currentLanguage].statusError;
+                    });
+            }
+        }
+
+        // Clear both input and output areas
+        function clearAll() {
+            document.getElementById('inputArea').value = '';
+            document.getElementById('outputArea').value = '';
+            updateCharCounts();
+            document.getElementById('statusMessage').textContent = texts[currentLanguage].statusReady;
+            showNotification('Cleared all fields', 'success');
+        }
+
+        // Show notification toast
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to format
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                formatJSON();
+            }
+            // Ctrl/Cmd + Shift + M to minify
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+                e.preventDefault();
+                minifyJSON();
+            }
+            // Ctrl/Cmd + E to escape
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                escapeText();
+            }
+            // Ctrl/Cmd + U to unescape
+            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                e.preventDefault();
+                unescapeText();
+            }
+            // Ctrl/Cmd + C to copy
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                e.preventDefault();
+                copyResult();
+            }
+            // Ctrl/Cmd + Delete to clear
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Delete') {
+                e.preventDefault();
+                clearAll();
+            }
+        });
+    </script>
+</body>
+</html>

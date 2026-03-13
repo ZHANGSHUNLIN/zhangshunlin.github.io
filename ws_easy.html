@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .connecting { background-color: orange; }
+        .open { background-color: green; }
+        .closed { background-color: red; }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            margin-top: 10px;
+        }
+        .log-area {
+            background-color: #f0f0f0;
+            font-family: monospace;
+            overflow-y: scroll;
+            max-height: 300px;
+            padding: 10px;
+        }
+        .sent { color: blue; }
+        .received { color: green; }
+        .error { color: red; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="panel">
+        <h2 id="appTitle">WebSocket Debug Tool</h2>
+        <button id="langToggle">EN/中文</button>
+        <input type="text" id="wsUrl" placeholder="WebSocket URL" />
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn">Disconnect</button>
+        <span id="statusIndicator" class="status-indicator connecting"></span><span id="statusText">Connecting...</span>
+    </div>
+
+    <div class="panel">
+        <textarea id="messageInput" placeholder="Message to send"></textarea>
+        <button id="sendBtn">Send</button>
+    </div>
+
+    <div class="panel">
+        <div id="logArea" class="log-area"></div>
+        <button id="clearLogBtn">Clear Log</button>
+    </div>
+</div>
+
+<script>
+    let ws;
+    const messages = {
+        en: {
+            appTitle: "WebSocket Debug Tool",
+            connectBtn: "Connect",
+            disconnectBtn: "Disconnect",
+            sendBtn: "Send",
+            clearLogBtn: "Clear Log",
+            wsUrlPlaceholder: "WebSocket URL",
+            messageInputPlaceholder: "Message to send",
+            statusConnecting: "Connecting...",
+            statusOpen: "Connected",
+            statusClosed: "Disconnected"
+        },
+        zh: {
+            appTitle: "WebSocket调试工具",
+            connectBtn: "连接",
+            disconnectBtn: "断开",
+            sendBtn: "发送",
+            clearLogBtn: "清空日志",
+            wsUrlPlaceholder: "WebSocket地址",
+            messageInputPlaceholder: "要发送的消息",
+            statusConnecting: "正在连接...",
+            statusOpen: "已连接",
+            statusClosed: "已断开"
+        }
+    };
+
+    let currentLang = 'en';
+
+    function updateLanguage() {
+        document.getElementById('appTitle').innerText = messages[currentLang].appTitle;
+        document.getElementById('connectBtn').value = messages[currentLang].connectBtn;
+        document.getElementById('disconnectBtn').value = messages[currentLang].disconnectBtn;
+        document.getElementById('sendBtn').value = messages[currentLang].sendBtn;
+        document.getElementById('clearLogBtn').value = messages[currentLang].clearLogBtn;
+        document.getElementById('wsUrl').placeholder = messages[currentLang].wsUrlPlaceholder;
+        document.getElementById('messageInput').placeholder = messages[currentLang].messageInputPlaceholder;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            document.getElementById('statusText').innerText = messages[currentLang].statusOpen;
+        } else if (ws && ws.readyState === WebSocket.CONNECTING) {
+            document.getElementById('statusText').innerText = messages[currentLang].statusConnecting;
+        } else {
+            document.getElementById('statusText').innerText = messages[currentLang].statusClosed;
+        }
+    }
+
+    document.getElementById('langToggle').addEventListener('click', () => {
+        currentLang = currentLang === 'en' ? 'zh' : 'en';
+        updateLanguage();
+    });
+
+    document.getElementById('connectBtn').addEventListener('click', () => {
+        ws = new WebSocket(document.getElementById('wsUrl').value);
+        ws.onopen = () => {
+            document.getElementById('statusIndicator').className = 'status-indicator open';
+            document.getElementById('statusText').innerText = messages[currentLang].statusOpen;
+            logMessage('System', messages[currentLang].statusOpen, 'open');
+        };
+        ws.onerror = (e) => logMessage('Error', e.message, 'error');
+        ws.onclose = () => {
+            document.getElementById('statusIndicator').className = 'status-indicator closed';
+            document.getElementById('statusText').innerText = messages[currentLang].statusClosed;
+            logMessage('System', messages[currentLang].statusClosed, 'closed');
+        };
+        ws.onmessage = (msg) => logMessage('Received', msg.data, 'received');
+    });
+
+    document.getElementById('disconnectBtn').addEventListener('click', () => {
+        if (ws) ws.close();
+    });
+
+    document.getElementById('sendBtn').addEventListener('click', () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(document.getElementById('messageInput').value);
+            logMessage('Sent', document.getElementById('messageInput').value, 'sent');
+        } else {
+            alert(messages[currentLang].statusClosed);
+        }
+    });
+
+    document.getElementById('clearLogBtn').addEventListener('click', () => {
+        document.getElementById('logArea').innerHTML = '';
+    });
+
+    function logMessage(type, content, cssClass) {
+        const logArea = document.getElementById('logArea');
+        const messageLine = `<div class="${cssClass}">${type}: ${content}</div>`;
+        logArea.innerHTML += messageLine;
+        logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    updateLanguage();
+</script>
+</body>
+</html>

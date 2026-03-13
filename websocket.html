@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Inspector</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light-bg: #f8f9fa;
+            --dark-bg: #1d3557;
+            --card-bg: #ffffff;
+            --text-primary: #2b2d42;
+            --text-secondary: #8d99ae;
+            --border: #e0e0e0;
+            --log-sent: #e0f7fa;
+            --log-received: #f3e5f5;
+            --log-system: #e8f5e9;
+            --log-error: #ffebee;
+        }
+
+        .dark-mode {
+            --light-bg: #121212;
+            --dark-bg: #1e1e1e;
+            --card-bg: #2d2d2d;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --border: #444;
+            --log-sent: #004d40;
+            --log-received: #4a148c;
+            --log-system: #1b5e20;
+            --log-error: #b71c1c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .theme-toggle {
+            background: var(--dark-bg);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .lang-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover, .lang-toggle:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .connection-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-connecting { background-color: #ffa726; }
+        .status-open { background-color: #66bb6a; }
+        .status-closed { background-color: #ef5350; }
+
+        .chat-panel, .log-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .message-input-area {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .message-input-area textarea {
+            flex: 1;
+            min-height: 100px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+        }
+
+        .message-input-area textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .log-container {
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .log-sent {
+            background-color: var(--log-sent);
+            border-left: 4px solid var(--primary);
+        }
+
+        .log-received {
+            background-color: var(--log-received);
+            border-left: 4px solid var(--success);
+        }
+
+        .log-system {
+            background-color: var(--log-system);
+            border-left: 4px solid var(--warning);
+            color: var(--text-secondary);
+        }
+
+        .log-error {
+            background-color: var(--log-error);
+            border-left: 4px solid var(--danger);
+            color: #fff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .input-group, .message-input-area {
+                flex-direction: column;
+            }
+
+            input[type="text"], .message-input-area textarea, .btn {
+                width: 100%;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="app-title">WebSocket Inspector</h1>
+            <div>
+                <button class="theme-toggle" id="theme-toggle">🌙 Dark</button>
+                <button class="lang-toggle" id="lang-toggle">EN/中文</button>
+            </div>
+        </header>
+
+        <div class="connection-panel">
+            <div class="input-group">
+                <input type="text" id="ws-url" placeholder="e.g., ws://localhost:8080/chat" />
+                <button class="btn btn-primary" id="connect-btn">🔗 Connect</button>
+                <button class="btn btn-danger" id="disconnect-btn">🔌 Disconnect</button>
+            </div>
+            <div class="status-bar">
+                <span class="status-indicator status-connecting" id="status-indicator"></span>
+                <span id="status-text">Ready to connect</span>
+            </div>
+        </div>
+
+        <div class="chat-panel">
+            <h2 class="panel-title" id="message-panel-title">Send Message</h2>
+            <div class="message-input-area">
+                <textarea id="message-input" placeholder="Type your message here..."></textarea>
+                <button class="btn btn-outline" id="send-btn">Send →</button>
+            </div>
+        </div>
+
+        <div class="log-panel">
+            <h2 class="panel-title" id="log-panel-title">Communication Log</h2>
+            <div class="log-container" id="log-container"></div>
+            <div class="action-buttons">
+                <button class="btn btn-outline" id="clear-log-btn">🗑️ Clear Log</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State and Configuration ---
+        let ws = null;
+        const messages = {
+            en: {
+                appTitle: 'WebSocket Inspector',
+                connectBtn: '🔗 Connect',
+                disconnectBtn: '🔌 Disconnect',
+                sendBtn: 'Send →',
+                clearLogBtn: '🗑️ Clear Log',
+                urlPlaceholder: 'e.g., ws://localhost:8080/chat',
+                messagePlaceholder: 'Type your message here...',
+                statusReady: 'Ready to connect',
+                statusConnecting: 'Connecting...',
+                statusOpen: 'Connected',
+                statusClosed: 'Disconnected',
+                logSentPrefix: '[SENT]',
+                logReceivedPrefix: '[RECEIVED]',
+                logSystemPrefix: '[SYSTEM]',
+                logErrorPrefix: '[ERROR]',
+                messagePanelTitle: 'Send Message',
+                logPanelTitle: 'Communication Log',
+                alertNotConnected: 'Please connect to a WebSocket server first.',
+                themeLight: '☀️ Light',
+                themeDark: '🌙 Dark'
+            },
+            zh: {
+                appTitle: 'WebSocket 检查工具',
+                connectBtn: '🔗 连接',
+                disconnectBtn: '🔌 断开',
+                sendBtn: '发送 →',
+                clearLogBtn: '🗑️ 清空日志',
+                urlPlaceholder: '例如: ws://localhost:8080/chat',
+                messagePlaceholder: '在此输入消息...',
+                statusReady: '准备连接',
+                statusConnecting: '正在连接...',
+                statusOpen: '已连接',
+                statusClosed: '已断开',
+                logSentPrefix: '[已发送]',
+                logReceivedPrefix: '[已接收]',
+                logSystemPrefix: '[系统]',
+                logErrorPrefix: '[错误]',
+                messagePanelTitle: '发送消息',
+                logPanelTitle: '通信日志',
+                alertNotConnected: '请先连接到 WebSocket 服务器。',
+                themeLight: '☀️ 浅色',
+                themeDark: '🌙 深色'
+            }
+        };
+        let currentLang = 'en';
+        let isDarkMode = false;
+
+        // --- DOM Elements ---
+        const $ = {
+            wsUrl: document.getElementById('ws-url'),
+            connectBtn: document.getElementById('connect-btn'),
+            disconnectBtn: document.getElementById('disconnect-btn'),
+            statusIndicator: document.getElementById('status-indicator'),
+            statusText: document.getElementById('status-text'),
+            messageInput: document.getElementById('message-input'),
+            sendBtn: document.getElementById('send-btn'),
+            logContainer: document.getElementById('log-container'),
+            clearLogBtn: document.getElementById('clear-log-btn'),
+            themeToggle: document.getElementById('theme-toggle'),
+            langToggle: document.getElementById('lang-toggle'),
+            appTitle: document.getElementById('app-title'),
+            messagePanelTitle: document.getElementById('message-panel-title'),
+            logPanelTitle: document.getElementById('log-panel-title')
+        };
+
+        // --- Helper Functions ---
+        function updateLanguage() {
+            const msg = messages[currentLang];
+            $.connectBtn.textContent = msg.connectBtn;
+            $.disconnectBtn.textContent = msg.disconnectBtn;
+            $.sendBtn.textContent = msg.sendBtn;
+            $.clearLogBtn.textContent = msg.clearLogBtn;
+            $.wsUrl.placeholder = msg.urlPlaceholder;
+            $.messageInput.placeholder = msg.messagePlaceholder;
+            $.appTitle.textContent = msg.appTitle;
+            $.messagePanelTitle.textContent = msg.messagePanelTitle;
+            $.logPanelTitle.textContent = msg.logPanelTitle;
+            $.themeToggle.textContent = isDarkMode ? msg.themeLight : msg.themeDark;
+            
+            // Update status text based on current connection state
+            updateStatusDisplay();
+        }
+
+        function updateStatusDisplay() {
+            const msg = messages[currentLang];
+            if (!ws) {
+                $.statusText.textContent = msg.statusReady;
+                $.statusIndicator.className = 'status-indicator status-closed';
+            } else {
+                switch (ws.readyState) {
+                    case WebSocket.CONNECTING:
+                        $.statusText.textContent = msg.statusConnecting;
+                        $.statusIndicator.className = 'status-indicator status-connecting';
+                        break;
+                    case WebSocket.OPEN:
+                        $.statusText.textContent = msg.statusOpen;
+                        $.statusIndicator.className = 'status-indicator status-open';
+                        break;
+                    case WebSocket.CLOSING:
+                    case WebSocket.CLOSED:
+                        $.statusText.textContent = msg.statusClosed;
+                        $.statusIndicator.className = 'status-indicator status-closed';
+                        break;
+                }
+            }
+        }
+
+        function log(message, type) {
+            const msg = messages[currentLang];
+            const timestamp = new Date().toLocaleTimeString();
+            let entryClass = 'log-entry ';
+            let prefix = '';
+
+            switch (type) {
+                case 'sent':
+                    entryClass += 'log-sent';
+                    prefix = msg.logSentPrefix;
+                    break;
+                case 'received':
+                    entryClass += 'log-received';
+                    prefix = msg.logReceivedPrefix;
+                    break;
+                case 'system':
+                    entryClass += 'log-system';
+                    prefix = msg.logSystemPrefix;
+                    break;
+                case 'error':
+                    entryClass += 'log-error';
+                    prefix = msg.logErrorPrefix;
+                    break;
+            }
+
+            const logEntry = document.createElement('div');
+            logEntry.className = entryClass;
+            logEntry.textContent = `[${timestamp}] ${prefix} ${message}`;
+            $.logContainer.appendChild(logEntry);
+
+            // Auto-scroll to the bottom
+            $.logContainer.scrollTop = $.logContainer.scrollHeight;
+        }
+
+        function connect() {
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                log("A connection is already active or being established.", "system");
+                return;
+            }
+
+            const url = $.wsUrl.value.trim();
+            if (!url) {
+                log("Please enter a WebSocket URL.", "error");
+                return;
+            }
+
+            try {
+                log(`Connecting to ${url}...`, "system");
+                ws = new WebSocket(url);
+
+                ws.onopen = () => {
+                    log(`Connection established successfully.`, "system");
+                    updateStatusDisplay();
+                };
+
+                ws.onmessage = (event) => {
+                    log(event.data, "received");
+                };
+
+                ws.onerror = (error) => {
+                    log(`An error occurred: ${error.message}`, "error");
+                };
+
+                ws.onclose = (event) => {
+                    const reason = event.code !== 1000 ? ` (Code: ${event.code}, Reason: ${event.reason})` : '';
+                    log(`Connection closed by server.${reason}`, "system");
+                    updateStatusDisplay();
+                };
+
+            } catch (e) {
+                log(`Failed to create connection: ${e.message}`, "error");
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close(1000, "Closed by user");
+                ws = null; // Clear the reference immediately
+            } else {
+                log(messages[currentLang].statusClosed, "system");
+            }
+        }
+
+        function sendMessage() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert(messages[currentLang].alertNotConnected);
+                return;
+            }
+
+            const message = $.messageInput.value.trim();
+            if (message) {
+                try {
+                    ws.send(message);
+                    log(message, "sent");
+                    $.messageInput.value = ''; // Clear input after sending
+                } catch (e) {
+                    log(`Failed to send message: ${e.message}`, "error");
+                }
+            }
+        }
+
+        function clearLog() {
+            $.logContainer.innerHTML = '';
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            updateLanguage(); // To update the theme toggle button text
+        }
+
+        // --- Event Listeners ---
+        $.connectBtn.addEventListener('click', connect);
+        $.disconnectBtn.addEventListener('click', disconnect);
+        $.sendBtn.addEventListener('click', sendMessage);
+        $.clearLogBtn.addEventListener('click', clearLog);
+        
+        $.messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent new line in textarea
+                sendMessage();
+            }
+        });
+
+        $.langToggle.addEventListener('click', () => {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            updateLanguage();
+        });
+
+        $.themeToggle.addEventListener('click', toggleTheme);
+
+        // --- Initialization ---
+        updateLanguage();
+    </script>
+</body>
+</html>

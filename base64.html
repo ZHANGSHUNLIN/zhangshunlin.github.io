@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encoder/Decoder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #2c3e50;
+        }
+
+        .lang-toggle {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .lang-toggle:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .tool-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .tool-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 18px 25px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .encode-card .card-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+        }
+
+        .decode-card .card-header {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+            background: #3498db;
+            color: white;
+            flex: 1;
+        }
+
+        .primary-btn:hover {
+            background: #2980b9;
+        }
+
+        .secondary-btn {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .secondary-btn:hover {
+            background: #d5dbdb;
+        }
+
+        .output-container {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .output-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .output-text {
+            width: 100%;
+            height: 180px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            font-family: monospace;
+            word-break: break-all;
+            resize: vertical;
+        }
+
+        .copy-btn {
+            background: #9b59b6;
+            color: white;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: #8e44ad;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .success {
+            background: #2ecc71;
+        }
+
+        .error {
+            background: #e74c3c;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .instant-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #3498db;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="app-title">Base64 Encoder/Decoder</h1>
+            <button class="lang-toggle" id="lang-toggle">EN/中文</button>
+        </header>
+
+        <div class="tool-container">
+            <div class="card encode-card">
+                <div class="card-header" id="encode-header">Text to Base64</div>
+                <div class="card-body">
+                    <textarea id="text-input" placeholder="Enter text to encode..."></textarea>
+                    <div class="button-group">
+                        <button class="primary-btn" id="encode-btn">Encode to Base64</button>
+                        <button class="secondary-btn" id="clear-encode-btn">Clear</button>
+                    </div>
+                    <div class="instant-toggle">
+                        <label class="switch">
+                            <input type="checkbox" id="instant-encode">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="instant-encode-label">Instant conversion</span>
+                    </div>
+                    <div class="output-container">
+                        <label class="output-label" id="encoded-output-label">Encoded Result:</label>
+                        <textarea id="encoded-output" class="output-text" readonly></textarea>
+                        <button class="copy-btn" id="copy-encoded-btn">Copy Encoded Text</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card decode-card">
+                <div class="card-header" id="decode-header">Base64 to Text</div>
+                <div class="card-body">
+                    <textarea id="base64-input" placeholder="Enter Base64 to decode..."></textarea>
+                    <div class="button-group">
+                        <button class="primary-btn" id="decode-btn">Decode to Text</button>
+                        <button class="secondary-btn" id="clear-decode-btn">Clear</button>
+                    </div>
+                    <div class="instant-toggle">
+                        <label class="switch">
+                            <input type="checkbox" id="instant-decode">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="instant-decode-label">Instant conversion</span>
+                    </div>
+                    <div class="output-container">
+                        <label class="output-label" id="decoded-output-label">Decoded Result:</label>
+                        <textarea id="decoded-output" class="output-text" readonly></textarea>
+                        <button class="copy-btn" id="copy-decoded-btn">Copy Decoded Text</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p id="footer-text">Base64 Encoder/Decoder Tool &copy; 2023 - Works offline</p>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Language management
+        const messages = {
+            en: {
+                appTitle: 'Base64 Encoder/Decoder',
+                encodeHeader: 'Text to Base64',
+                decodeHeader: 'Base64 to Text',
+                encodePlaceholder: 'Enter text to encode...',
+                decodePlaceholder: 'Enter Base64 to decode...',
+                encodeBtn: 'Encode to Base64',
+                decodeBtn: 'Decode to Text',
+                clearBtn: 'Clear',
+                copyBtn: 'Copy Encoded Text',
+                copyDecodedBtn: 'Copy Decoded Text',
+                encodedLabel: 'Encoded Result:',
+                decodedLabel: 'Decoded Result:',
+                instantLabel: 'Instant conversion',
+                notificationSuccess: 'Copied to clipboard!',
+                notificationError: 'Invalid Base64 string!',
+                footer: 'Base64 Encoder/Decoder Tool &copy; 2023 - Works offline',
+                langToggle: 'EN/中文'
+            },
+            zh: {
+                appTitle: 'Base64编码解码器',
+                encodeHeader: '文本转Base64',
+                decodeHeader: 'Base64转文本',
+                encodePlaceholder: '请输入要编码的文本...',
+                decodePlaceholder: '请输入要解码的Base64...',
+                encodeBtn: '编码为Base64',
+                decodeBtn: '解码为文本',
+                clearBtn: '清空',
+                copyBtn: '复制编码结果',
+                copyDecodedBtn: '复制解码结果',
+                encodedLabel: '编码结果：',
+                decodedLabel: '解码结果：',
+                instantLabel: '即时转换',
+                notificationSuccess: '已复制到剪贴板！',
+                notificationError: '无效的Base64字符串！',
+                footer: 'Base64编码解码工具 &copy; 2023 - 支持离线使用',
+                langToggle: 'EN/中文'
+            }
+        };
+
+        let currentLang = 'en';
+
+        function updateLanguage() {
+            const msg = messages[currentLang];
+            
+            document.getElementById('app-title').textContent = msg.appTitle;
+            document.getElementById('encode-header').textContent = msg.encodeHeader;
+            document.getElementById('decode-header').textContent = msg.decodeHeader;
+            document.getElementById('text-input').placeholder = msg.encodePlaceholder;
+            document.getElementById('base64-input').placeholder = msg.decodePlaceholder;
+            document.getElementById('encode-btn').textContent = msg.encodeBtn;
+            document.getElementById('decode-btn').textContent = msg.decodeBtn;
+            document.getElementById('clear-encode-btn').textContent = msg.clearBtn;
+            document.getElementById('clear-decode-btn').textContent = msg.clearBtn;
+            document.getElementById('copy-encoded-btn').textContent = msg.copyBtn;
+            document.getElementById('copy-decoded-btn').textContent = msg.copyDecodedBtn;
+            document.getElementById('encoded-output-label').textContent = msg.encodedLabel;
+            document.getElementById('decoded-output-label').textContent = msg.decodedLabel;
+            document.getElementById('instant-encode-label').textContent = msg.instantLabel;
+            document.getElementById('instant-decode-label').textContent = msg.instantLabel;
+            document.getElementById('footer-text').textContent = msg.footer;
+            document.getElementById('lang-toggle').textContent = msg.langToggle;
+        }
+
+        // Core functions
+        function encodeToBase64(text) {
+            try {
+                return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+                }));
+            } catch (e) {
+                showNotification(messages[currentLang].notificationError, 'error');
+                return '';
+            }
+        }
+
+        function decodeFromBase64(base64) {
+            try {
+                return decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+            } catch (e) {
+                showNotification(messages[currentLang].notificationError, 'error');
+                return '';
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('encode-btn').addEventListener('click', () => {
+            const input = document.getElementById('text-input').value;
+            const output = encodeToBase64(input);
+            document.getElementById('encoded-output').value = output;
+        });
+
+        document.getElementById('decode-btn').addEventListener('click', () => {
+            const input = document.getElementById('base64-input').value;
+            const output = decodeFromBase64(input);
+            document.getElementById('decoded-output').value = output;
+        });
+
+        document.getElementById('clear-encode-btn').addEventListener('click', () => {
+            document.getElementById('text-input').value = '';
+            document.getElementById('encoded-output').value = '';
+        });
+
+        document.getElementById('clear-decode-btn').addEventListener('click', () => {
+            document.getElementById('base64-input').value = '';
+            document.getElementById('decoded-output').value = '';
+        });
+
+        document.getElementById('copy-encoded-btn').addEventListener('click', () => {
+            const output = document.getElementById('encoded-output');
+            output.select();
+            document.execCommand('copy');
+            showNotification(messages[currentLang].notificationSuccess, 'success');
+        });
+
+        document.getElementById('copy-decoded-btn').addEventListener('click', () => {
+            const output = document.getElementById('decoded-output');
+            output.select();
+            document.execCommand('copy');
+            showNotification(messages[currentLang].notificationSuccess, 'success');
+        });
+
+        // Instant conversion
+        document.getElementById('instant-encode').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('text-input').addEventListener('input', () => {
+                    const input = document.getElementById('text-input').value;
+                    const output = encodeToBase64(input);
+                    document.getElementById('encoded-output').value = output;
+                });
+            } else {
+                document.getElementById('text-input').removeEventListener('input', encodeInstantly);
+            }
+        });
+
+        document.getElementById('instant-decode').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('base64-input').addEventListener('input', () => {
+                    const input = document.getElementById('base64-input').value;
+                    const output = decodeFromBase64(input);
+                    document.getElementById('decoded-output').value = output;
+                });
+            } else {
+                document.getElementById('base64-input').removeEventListener('input', decodeInstantly);
+            }
+        });
+
+        // Language toggle
+        document.getElementById('lang-toggle').addEventListener('click', () => {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            updateLanguage();
+        });
+
+        // Initialize
+        updateLanguage();
+    </script>
+</body>
+</html>
