@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dual‑lang Timestamp Converter · 中英双语时间戳工具</title>
-    <!-- use moment & moment-timezone for robust timezone handling -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+    <title>Dual‑lang Timestamp Converter · robust CDN</title>
+    <!-- use jsDelivr (often less tracking issues) with fallback detection -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -107,9 +107,15 @@
             box-shadow: 0 8px 14px -6px #0f172a50;
             white-space: nowrap;
         }
-        .input-row button:hover {
+        .input-row button:hover:not(:disabled) {
             background: #1e293b;
             transform: scale(1.01);
+        }
+        .input-row button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #64748b;
+            box-shadow: none;
         }
         .timezone-row {
             margin-top: 1rem;
@@ -189,9 +195,13 @@
             align-items: center;
             gap: 0.3rem;
         }
-        .copy-btn:hover {
+        .copy-btn:hover:not(:disabled) {
             background: #eef2f6;
             border-color: #94a3b8;
+        }
+        .copy-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
         .copy-btn.copied {
             background: #10b981;
@@ -211,11 +221,38 @@
             background: #fee2e2;
             border-color: #fecaca;
         }
+        .library-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 0.8rem 1.2rem;
+            border-radius: 40px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .library-warning button {
+            background: #856404;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 0.4rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 <div class="card" id="app">
-    <!-- header with title + language toggle -->
+    <!-- library load alert (hidden by default) -->
+    <div id="lib-error" class="library-warning" style="display: none;">
+        <span id="lib-error-msg">⚠️ Timezone library failed to load. </span>
+        <button id="retry-lib">Retry</button>
+    </div>
+
     <div class="header">
         <h1 id="header-title">⏱️ Timestamp Converter</h1>
         <div class="lang-toggle">
@@ -224,7 +261,6 @@
         </div>
     </div>
 
-    <!-- main input area -->
     <div class="input-section">
         <div class="input-row">
             <input type="text" id="input-field" placeholder="Enter timestamp or date... (e.g. 1704038400 or 2025-03-13 10:00:00)">
@@ -245,7 +281,6 @@
         </div>
     </div>
 
-    <!-- result display with copy button -->
     <div class="result-area">
         <div class="result-text">
             <span class="result-label" id="result-label">Date/Time: </span>
@@ -260,7 +295,7 @@
 
 <script>
     (function() {
-        // --- i18n dictionary (EN / ZH) ---
+        // --- i18n dictionary ---
         const i18n = {
             en: {
                 headerTitle: '⏱️ Timestamp Converter',
@@ -275,6 +310,7 @@
                 copiedTooltip: '✅ Copied!',
                 invalidNumber: 'Invalid numeric timestamp',
                 invalidDate: 'Invalid date format',
+                libMissing: 'Timezone library missing. Click retry or refresh.',
             },
             zh: {
                 headerTitle: '⏱️ 时间戳转换器',
@@ -289,10 +325,11 @@
                 copiedTooltip: '✅ 已复制！',
                 invalidNumber: '无效的数字时间戳',
                 invalidDate: '无效的日期格式',
+                libMissing: '时区库加载失败。点击重试或刷新。',
             }
         };
 
-        // --- DOM elements ---
+        // DOM elements
         const headerTitle = document.getElementById('header-title');
         const inputField = document.getElementById('input-field');
         const convertBtn = document.getElementById('convert-btn');
@@ -304,18 +341,85 @@
         const btnEn = document.getElementById('btn-en');
         const btnZh = document.getElementById('btn-zh');
         const timezoneLabel = document.getElementById('timezone-label');
+        const libErrorDiv = document.getElementById('lib-error');
+        const libErrorMsg = document.getElementById('lib-error-msg');
+        const retryBtn = document.getElementById('retry-lib');
 
-        // --- state ---
-        let currentLang = 'en';               // default english
-        let lastInput = '';                   // store last converted input
-        let lastTz = timezoneSelect.value;     // store last used timezone
-        let lastResultType = null;             // 'date' or 'timestamp' or 'error'
+        // state
+        let currentLang = 'en';
+        let lastInput = '';
+        let lastTz = timezoneSelect.value;
+        let lastResultType = null; // 'date', 'timestamp', 'error'
+        let libReady = false;       // moment && moment.tz available
 
-        // --- helper: update UI texts according to language ---
+        // helper: check library
+        function isLibraryReady() {
+            return typeof moment !== 'undefined' && typeof moment.tz !== 'undefined';
+        }
+
+        // update UI based on library readiness
+        function setLibraryState() {
+            const ready = isLibraryReady();
+            libReady = ready;
+            if (ready) {
+                libErrorDiv.style.display = 'none';
+                convertBtn.disabled = false;
+                copyBtn.disabled = false;
+                timezoneSelect.disabled = false;
+            } else {
+                libErrorDiv.style.display = 'flex';
+                convertBtn.disabled = true;
+                copyBtn.disabled = true;
+                timezoneSelect.disabled = true;
+                // show error in result as well
+                resultLabel.innerText = i18n[currentLang].errorLabel;
+                resultValue.innerText = i18n[currentLang].libMissing;
+                resultValue.className = 'result-value error-value';
+                // update library message language
+                libErrorMsg.innerText = i18n[currentLang].libMissing + ' ';
+            }
+        }
+
+        // retry loading moment & moment-timezone from alternative CDN
+        function retryLibrary() {
+            libErrorMsg.innerText = '⏳ Loading... ';
+            // use a different CDN (unpkg) as fallback
+            const script1 = document.createElement('script');
+            script1.src = 'https://unpkg.com/moment@2.29.4/min/moment.min.js';
+            script1.onload = function() {
+                const script2 = document.createElement('script');
+                script2.src = 'https://unpkg.com/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js';
+                script2.onload = function() {
+                    setLibraryState();
+                    if (isLibraryReady()) {
+                        // if there was last input, reconvert
+                        if (lastInput) {
+                            performConversion();
+                        } else {
+                            // reset result placeholder
+                            resultLabel.innerText = i18n[currentLang].dateLabel;
+                            resultValue.innerText = '—';
+                            resultValue.className = 'result-value';
+                        }
+                    } else {
+                        setLibraryState(); // still not ready -> show error again
+                    }
+                };
+                script2.onerror = function() {
+                    setLibraryState(); // failed
+                };
+                document.head.appendChild(script2);
+            };
+            script1.onerror = function() {
+                setLibraryState(); // failed
+            };
+            document.head.appendChild(script1);
+        }
+
+        // language setter
         function setLanguage(lang) {
             currentLang = lang;
             const t = i18n[lang];
-
             headerTitle.innerText = t.headerTitle;
             inputField.placeholder = t.inputPlaceholder;
             timezoneLabel.innerText = t.timezoneLabel;
@@ -323,7 +427,6 @@
             copyBtn.innerText = t.copyBtn;
             footerNote.innerText = t.footerNote;
 
-            // update active class on language buttons
             if (lang === 'en') {
                 btnEn.classList.add('active');
                 btnZh.classList.remove('active');
@@ -332,7 +435,15 @@
                 btnEn.classList.remove('active');
             }
 
-            // refresh result label based on last result type (if any)
+            if (!libReady) {
+                libErrorMsg.innerText = t.libMissing + ' ';
+                resultLabel.innerText = t.errorLabel;
+                resultValue.innerText = t.libMissing;
+                resultValue.className = 'result-value error-value';
+                return;
+            }
+
+            // update label based on last result type
             if (lastResultType === 'date') {
                 resultLabel.innerText = t.dateLabel;
             } else if (lastResultType === 'timestamp') {
@@ -340,29 +451,24 @@
             } else if (lastResultType === 'error') {
                 resultLabel.innerText = t.errorLabel;
             } else {
-                resultLabel.innerText = t.dateLabel; // fallback
+                resultLabel.innerText = t.dateLabel;
+            }
+        }
+
+        // core conversion
+        function performConversion() {
+            if (!libReady) {
+                setLibraryState();
+                return;
             }
 
-            // if there's a last input and we have a result, we may want to keep the textual value.
-            // but label language is updated above, value remains untouched.
-        }
-
-        // --- detect if string is numeric (integer, negative allowed) ---
-        function isNumeric(str) {
-            return /^-?\d+$/.test(str.trim());
-        }
-
-        // --- core conversion logic ---
-        function performConversion() {
             const rawInput = inputField.value.trim();
             const tz = timezoneSelect.value;
-            // store for language toggle re-use
             lastInput = rawInput;
             lastTz = tz;
 
             if (rawInput === '') {
-                // empty: show friendly blank
-                resultLabel.innerText = i18n[currentLang].dateLabel; // default
+                resultLabel.innerText = i18n[currentLang].dateLabel;
                 resultValue.innerText = '—';
                 resultValue.className = 'result-value';
                 lastResultType = null;
@@ -371,22 +477,14 @@
 
             const t = i18n[currentLang];
 
-            // CASE 1: numeric -> treat as timestamp
-            if (isNumeric(rawInput)) {
+            // numeric?
+            if (/^-?\d+$/.test(rawInput)) {
                 let num = Number(rawInput);
-                // heuristic: seconds vs milliseconds
-                // if absolute value > 1e11 (100 billions) or string length > 11 => treat as ms, else seconds
                 const absNum = Math.abs(num);
-                let millis;
-                if (absNum > 1e11 || rawInput.length >= 13) {
-                    millis = num; // assume already ms
-                } else {
-                    millis = num * 1000; // seconds to ms
-                }
+                let millis = (absNum > 1e11 || rawInput.length >= 13) ? num : num * 1000;
 
                 const momentObj = moment.tz(millis, tz);
                 if (!momentObj.isValid()) {
-                    // invalid timestamp range
                     resultLabel.innerText = t.errorLabel;
                     resultValue.innerText = t.invalidNumber;
                     resultValue.className = 'result-value error-value';
@@ -398,9 +496,7 @@
                     resultValue.className = 'result-value';
                     lastResultType = 'date';
                 }
-            }
-            // CASE 2: non-numeric -> treat as date string
-            else {
+            } else {
                 const parsed = moment.tz(rawInput, tz);
                 if (!parsed.isValid()) {
                     resultLabel.innerText = t.errorLabel;
@@ -417,38 +513,31 @@
             }
         }
 
-        // --- copy to clipboard ---
+        // copy handler
         function copyResult() {
-            const textToCopy = resultValue.innerText;
-            if (!textToCopy || textToCopy === '—' || textToCopy.includes(i18n[currentLang].invalidNumber) || textToCopy.includes(i18n[currentLang].invalidDate)) {
-                return; // nothing meaningful to copy
-            }
+            if (!libReady) return;
+            const text = resultValue.innerText;
+            if (!text || text === '—' || text.includes(i18n[currentLang].invalidNumber) || text.includes(i18n[currentLang].invalidDate)) return;
 
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                // visual feedback on copy button
-                const originalText = copyBtn.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const original = copyBtn.innerText;
                 copyBtn.innerText = i18n[currentLang].copiedTooltip;
                 copyBtn.classList.add('copied');
                 setTimeout(() => {
                     copyBtn.innerText = i18n[currentLang].copyBtn;
                     copyBtn.classList.remove('copied');
                 }, 1500);
-            }).catch(() => {
-                alert('Copy failed, you can manually select the text.');
-            });
+            }).catch(() => alert('Copy failed, select manually.'));
         }
 
-        // --- refresh conversion when language changes, keeping last input/zone ---
+        // re-convert after lang change
         function reConvertWithLast() {
-            if (lastInput !== undefined && lastInput !== '') {
-                // temporarily set the input field to lastInput (it already should be the same, but ensure)
+            if (!libReady) return;
+            if (lastInput) {
                 inputField.value = lastInput;
-                // ensure select has lastTz
                 timezoneSelect.value = lastTz;
-                // run conversion again (will use current language)
                 performConversion();
             } else {
-                // if no previous conversion, just reset label to default language
                 resultLabel.innerText = i18n[currentLang].dateLabel;
                 resultValue.innerText = '—';
                 resultValue.className = 'result-value';
@@ -456,53 +545,61 @@
             }
         }
 
-        // --- event listeners ---
-        convertBtn.addEventListener('click', () => {
-            performConversion();
-        });
-
-        // allow Enter key in input
+        // --- event binding ---
+        convertBtn.addEventListener('click', performConversion);
         inputField.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 performConversion();
             }
         });
-
         copyBtn.addEventListener('click', copyResult);
+        timezoneSelect.addEventListener('change', () => {
+            if (libReady && lastInput) {
+                lastTz = timezoneSelect.value;
+                performConversion();
+            }
+        });
 
-        // language toggle
         btnEn.addEventListener('click', () => {
             if (currentLang === 'en') return;
             setLanguage('en');
             reConvertWithLast();
         });
-
         btnZh.addEventListener('click', () => {
             if (currentLang === 'zh') return;
             setLanguage('zh');
             reConvertWithLast();
         });
 
-        // optional: if timezone changes and there's already input, we could re-convert automatically? 
-        // not required by spec, but improves UX. Let's do it.
-        timezoneSelect.addEventListener('change', () => {
-            if (lastInput && lastInput !== '') {
-                // update lastTz, then convert
-                lastTz = timezoneSelect.value;
-                performConversion();
-            }
-        });
+        retryBtn.addEventListener('click', retryLibrary);
 
-        // --- initialise everything (default english) ---
-        setLanguage('en');
-        // set a fresh demo conversion? leave empty placeholder
+        // initialise
+        // first check if library loaded
+        if (isLibraryReady()) {
+            libReady = true;
+            libErrorDiv.style.display = 'none';
+            convertBtn.disabled = false;
+            copyBtn.disabled = false;
+            timezoneSelect.disabled = false;
+        } else {
+            setLibraryState(); // shows error and disables
+        }
+
+        setLanguage('en'); // sets active and labels
         inputField.value = '';
         resultValue.innerText = '—';
         lastResultType = null;
-        // store a sample placeholder but not converted
         lastInput = '';
+
+        // extra: if library loaded after initial (maybe async), we can check again after a short delay
+        setTimeout(() => {
+            if (!libReady && isLibraryReady()) {
+                setLibraryState();
+                setLanguage(currentLang); // refresh UI
+            }
+        }, 300);
     })();
 </script>
 </body>
-</html>
+</html>	
