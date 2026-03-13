@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔤 混合Unicode转中文 · \x进制转换器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .card {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 42px;
+            box-shadow: 0 20px 40px -8px rgba(0,20,40,0.25), 0 8px 16px -6px rgba(0,0,0,0.1);
+            padding: 32px;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        h1 {
+            font-weight: 500;
+            font-size: 2.1rem;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1a3e50;
+            letter-spacing: -0.02em;
+        }
+        h1 .badge {
+            background: #2d5f7e;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 400;
+            padding: 6px 18px;
+            border-radius: 60px;
+            box-shadow: inset 0 -2px 0 #1a3e50;
+        }
+        .sub {
+            color: #3b5e7a;
+            font-size: 1rem;
+            margin: 0 0 28px 0;
+            border-left: 4px solid #7ab3c9;
+            padding-left: 18px;
+            background: rgba(122, 179, 201, 0.1);
+            border-radius: 0 20px 20px 0;
+            line-height: 1.6;
+        }
+        .sub code {
+            background: #1e3f50;
+            color: #d4edff;
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        .main-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .panel {
+            flex: 1 1 300px;
+            background: #ffffffd9;
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: inset 0 1px 3px #ffffff, 0 8px 18px -8px #1f3b4d1a;
+            backdrop-filter: blur(4px);
+            border: 1px solid #ffffff;
+        }
+        .panel h2 {
+            font-size: 1.3rem;
+            font-weight: 450;
+            margin: 0 0 18px 0;
+            color: #1e4355;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel h2 svg {
+            opacity: 0.7;
+        }
+        textarea {
+            width: 100%;
+            height: 240px;
+            padding: 20px;
+            border: none;
+            background: #f1f9ff;
+            border-radius: 24px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #1b3c4f;
+            resize: vertical;
+            outline: 2px solid transparent;
+            transition: 0.15s ease;
+            box-shadow: inset 0 4px 8px #cbdae3, 0 1px 2px white;
+        }
+        textarea:focus {
+            outline: 2px solid #6faec9;
+            background: #ffffff;
+        }
+        .output-area {
+            background: #1e2f3a;
+            color: #e3f0f9;
+            height: 240px;
+            overflow-y: auto;
+            border-radius: 24px;
+            padding: 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            box-shadow: inset 0 4px 12px #0b151c, 0 2px 4px #b7d1de;
+            border: 1px solid #3b657b;
+        }
+        .placeholder {
+            opacity: 0.45;
+            font-style: italic;
+            user-select: none;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin: 28px 0 18px 0;
+            gap: 12px;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn {
+            background: white;
+            border: 1px solid #c5deec;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 520;
+            color: #1b4b66;
+            cursor: pointer;
+            transition: 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px -6px #203845;
+        }
+        .btn:hover {
+            background: #e5f0f7;
+            border-color: #7eb3cf;
+            transform: scale(0.98);
+            box-shadow: 0 6px 12px -8px #10232e;
+        }
+        .btn-primary {
+            background: #256077;
+            border-color: #164352;
+            color: white;
+            box-shadow: 0 8px 16px -10px #0e2c38;
+        }
+        .btn-primary:hover {
+            background: #1f4f63;
+        }
+        .info-chip {
+            background: #d8e8f2;
+            padding: 8px 22px;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            color: #113946;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .info-chip code {
+            background: #113e4e;
+            color: #c0e2f5;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+        hr {
+            margin: 30px 0 16px 0;
+            border: 1px solid #cbdae6;
+            border-bottom: none;
+            border-radius: 2px;
+        }
+        .examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+        }
+        .ex-btn {
+            background: none;
+            border: 1px dashed #689bb3;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            color: #1b4d63;
+            cursor: pointer;
+            transition: 0.1s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .ex-btn:hover {
+            background: #b7d6ea;
+            border-style: solid;
+        }
+        .footer-note {
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: #376277;
+            background: #e3f0f8;
+            padding: 8px 20px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .footer-note span {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>
+            ⚙️ 原始 Unicode 转中文
+            <span class="badge">\x 混合解码</span>
+        </h1>
+        <div class="sub">
+            <code>\x88\xe5\x85\x89\xe7\x99\xbd</code>  →  “光白”  同时保留普通文本、数字、英文。  
+            智能识别形如 <code>\xHH</code> 的十六进制编码（连续多个自动合并）。
+        </div>
+
+        <div class="main-panel">
+            <!-- 输入区 -->
+            <div class="panel">
+                <h2>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10H21M7 15H11M7 18H14M5 4H19C20.1046 4 21 4.89543 21 6V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V6C3 4.89543 3.89543 4 5 4Z" /></svg>
+                    输入原文
+                </h2>
+                <textarea id="inputText" placeholder='例如:  \x88\xe5\x85\x89\xe7\x99\xbd  hello 123 \xe4\xb8\xad\xe6\x96\x87  🌀 夹杂\xe6\xb5\x8b\xe8\xaf\x95...'>\x88\xe5\x85\x89\xe7\x99\xbd 普通文本 123 \xe4\xb8\xad\xe6\x96\x87 和 ASCII \xe6\xb7\xb7\xe5\x90\x88\xe7\xbc\x96\xe7\xa0\x81</textarea>
+            </div>
+            <!-- 输出区 -->
+            <div class="panel">
+                <h2>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10L12 14M12 14L16 10M12 14V4M6 20H18" /></svg>
+                    解码结果
+                </h2>
+                <div id="outputBox" class="output-area">&#8203;</div>
+            </div>
+        </div>
+
+        <!-- 控制栏 -->
+        <div class="toolbar">
+            <div class="button-group">
+                <button class="btn" id="decodeBtn">
+                    <span>🔁</span> 立即转换
+                </button>
+                <button class="btn" id="clearBtn">
+                    <span>🗑️</span> 清空
+                </button>
+                <button class="btn" id="copyBtn">
+                    <span>📋</span> 复制结果
+                </button>
+            </div>
+            <div class="info-chip">
+                <span>检测规则：</span>
+                <code>\xHH</code> 连续解析，无效跳过
+            </div>
+        </div>
+
+        <!-- 常用示例 -->
+        <hr>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div class="examples">
+                <span style="color:#215a73;">📋 填充示例：</span>
+                <button class="ex-btn" id="ex1">\xE5\x85\x89\xE7\x99\xBD</button>
+                <button class="ex-btn" id="ex2">A\xe6\xb5\x8b B\xe8\xaf\x95 123</button>
+                <button class="ex-btn" id="ex3">\x88\xe5\x85\x89 颜色\xe7\x99\xbd\xe6\x97\xa0\xe6\x95\x88\xZZ</button>
+                <button class="ex-btn" id="ex4">纯文本 + 数字42 + \xe4\xb8\xad\xe6\x96\x87</button>
+            </div>
+            <span style="color:#326882; font-size:0.9rem;">转换后UTF-16字符正常显示</span>
+        </div>
+        <div class="footer-note">
+            <span>ⓘ 说明：</span> 支持任意混合内容，形如 <code>\x61\x62\x63</code> 转为 "abc"；无效转义（如<code>\xZZ</code>）保留原样。
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const inputEl = document.getElementById('inputText');
+            const outputEl = document.getElementById('outputBox');
+            const decodeBtn = document.getElementById('decodeBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+
+            // 示例按钮
+            const ex1 = document.getElementById('ex1');
+            const ex2 = document.getElementById('ex2');
+            const ex3 = document.getElementById('ex3');
+            const ex4 = document.getElementById('ex4');
+
+            // ---------- 核心解码函数 ----------
+            function decodeMixedUnicode(str) {
+                if (!str) return '';
+
+                const regex = /(\\x[0-9A-Fa-f]{2})+/g;
+                return str.replace(regex, (match) => {
+                    // match 是一个或多个 \xHH 的连续序列，例如 \x88\xe5\x85\x89\xe7\x99\xbd
+                    // 提取所有十六进制字节
+                    const hexBytes = match.match(/\\x([0-9A-Fa-f]{2})/g);
+                    if (!hexBytes) return match; // 无匹配(实际上不会)
+
+                    // 将每个 "\xHH" 转换为数值字节
+                    const byteArray = [];
+                    for (let hex of hexBytes) {
+                        const byteStr = hex.slice(2); // 去掉 "\x"
+                        const byteVal = parseInt(byteStr, 16);
+                        if (!isNaN(byteVal)) {
+                            byteArray.push(byteVal);
+                        } else {
+                            // 极少情况: 非法十六进制, 但正则已经限定[0-9A-Fa-f]{2}, 一般不会到这里
+                            return match; 
+                        }
+                    }
+
+                    // 用 Uint8Array 包装，然后通过 TextDecoder 以 UTF-8 方式解码
+                    try {
+                        const uint8 = new Uint8Array(byteArray);
+                        const decoder = new TextDecoder('utf-8'); // 标准UTF-8
+                        const decoded = decoder.decode(uint8);
+                        // 如果有解码失败的字符(如不连续字节)通常会被替换为�, 但此处保持原始行为
+                        return decoded;
+                    } catch (e) {
+                        // 万一解码出错（极少情况），回退到原串
+                        return match;
+                    }
+                });
+            }
+
+            // 更新输出区
+            function updateOutput() {
+                const raw = inputEl.value;
+                const converted = decodeMixedUnicode(raw);
+                // 清空占位符效果：如果结果为空串，显示占位元素
+                if (converted === '') {
+                    outputEl.innerHTML = '<span class="placeholder">✨ 转换后为空，等待输入…</span>';
+                } else {
+                    outputEl.textContent = converted;   // 纯文本显示，避免注入
+                }
+            }
+
+            // 初次渲染占位
+            outputEl.innerHTML = '<span class="placeholder">✨ 点击“立即转换”或直接修改输入预览</span>';
+
+            // 监听转换按钮
+            decodeBtn.addEventListener('click', () => {
+                updateOutput();
+            });
+
+            // 清空输入和输出
+            clearBtn.addEventListener('click', () => {
+                inputEl.value = '';
+                outputEl.innerHTML = '<span class="placeholder">✨ 转换后为空，等待输入…</span>';
+            });
+
+            // 复制结果
+            copyBtn.addEventListener('click', () => {
+                const content = outputEl.innerText;  // 使用 innerText 去除可能的占位符样式但保留文本
+                if (!content || content.includes('✨ 转换后为空') || content.includes('等待输入')) {
+                    alert('没有可复制的内容');
+                    return;
+                }
+                navigator.clipboard.writeText(content).then(() => {
+                    // 简单反馈
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<span>✅</span> 已复制';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 1500);
+                }).catch(() => {
+                    alert('复制失败，请手动选择');
+                });
+            });
+
+            // 示例填充函数
+            function setExample(text) {
+                inputEl.value = text;
+                // 自动转换（便于预览）
+                updateOutput();
+            }
+
+            ex1.addEventListener('click', () => setExample('\\xE5\\x85\\x89\\xE7\\x99\\xBD'));   // 光白
+            ex2.addEventListener('click', () => setExample('A\\xe6\\xb5\\x8b B\\xe8\\xaf\\x95 123')); // A测 B试 123
+            ex3.addEventListener('click', () => setExample('\\x88\\xe5\\x85\\x89 颜色\\xe7\\x99\\xbd\\xe6\\x97\\xa0\\xe6\\x95\\x88\\xZZ')); // 包含无效\xZZ保留
+            ex4.addEventListener('click', () => setExample('纯文本 + 数字42 + \\xe4\\xb8\\xad\\xe6\\x96\\x87')); // 纯文本 + 数字42 + 中文
+
+            // 额外功能：输入框实时转换？为了不过度消耗性能，让用户主动点击转换，但也可以加一个可选的实时模式。
+            // 这里加一个小彩蛋：双击输入框也可以转换（符合用户期待）
+            inputEl.addEventListener('dblclick', () => {
+                updateOutput();
+            });
+
+            // 处理初次页面加载时显示默认输入转换 (如果默认textarea有内容)
+            window.addEventListener('load', () => {
+                // 如果默认输入框有文字，自动执行一次转换，让页面打开就显示结果
+                if (inputEl.value.trim() !== '') {
+                    updateOutput();
+                } else {
+                    // 给个示例展示一下，以免空白
+                    setExample('\\x88\\xe5\\x85\\x89\\xe7\\x99\\xbd 普通文本 123 \\xe4\\xb8\\xad\\xe6\\x96\\x87 和 ASCII \\xe6\\xb7\\xb7\\xe5\\x90\\x88\\xe7\\xbc\\x96\\xe7\\xa0\\x81');
+                }
+            });
+
+            // 辅助：如果用户想手动触发，按钮已齐全。
+        })();
+    </script>
+</body>
+</html>
