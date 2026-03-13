@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual‑lang Timestamp Converter · 中英双语时间戳工具</title>
+    <!-- use moment & moment-timezone for robust timezone handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 1rem;
+        }
+        .card {
+            max-width: 820px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px -8px rgba(0,0,0,0.15), 0 8px 12px -4px rgba(0,0,0,0.05);
+            padding: 2rem 2rem 2.2rem;
+            transition: all 0.2s ease;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(145deg, #0f172a, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+        .lang-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: #e9eef3;
+            padding: 0.3rem;
+            border-radius: 60px;
+        }
+        .lang-btn {
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #1e293b;
+        }
+        .lang-btn.active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .input-section {
+            margin-bottom: 1.6rem;
+        }
+        .input-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .input-row input {
+            flex: 1 1 260px;
+            padding: 0.9rem 1.2rem;
+            border: 1.5px solid #dee7ef;
+            border-radius: 48px;
+            font-size: 1rem;
+            background: white;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+        .input-row input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+        }
+        .input-row button {
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 48px;
+            padding: 0.9rem 2.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 8px 14px -6px #0f172a50;
+            white-space: nowrap;
+        }
+        .input-row button:hover {
+            background: #1e293b;
+            transform: scale(1.01);
+        }
+        .timezone-row {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .timezone-row label {
+            font-weight: 500;
+            color: #1e293b;
+            background: #f8fafc;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.95rem;
+        }
+        .timezone-row select {
+            flex: 1 1 240px;
+            padding: 0.7rem 1rem;
+            border-radius: 40px;
+            border: 1.5px solid #dee7ef;
+            background: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23334155" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+        .result-area {
+            background: #f8fafc;
+            border-radius: 40px;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+        .result-text {
+            font-size: 1.3rem;
+            font-weight: 500;
+            word-break: break-word;
+            color: #0f172a;
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .result-label {
+            color: #475569;
+            font-weight: 450;
+            font-size: 1.1rem;
+        }
+        .result-value {
+            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            background: white;
+            padding: 0.2rem 1rem;
+            border-radius: 60px;
+            border: 1px solid #d1d9e6;
+            font-size: 1.2rem;
+        }
+        .copy-btn {
+            background: white;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 40px;
+            padding: 0.7rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .copy-btn:hover {
+            background: #eef2f6;
+            border-color: #94a3b8;
+        }
+        .copy-btn.copied {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        .footer-note {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            text-align: center;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 1.2rem;
+        }
+        .error-value {
+            color: #b91c1c;
+            background: #fee2e2;
+            border-color: #fecaca;
+        }
+    </style>
+</head>
+<body>
+<div class="card" id="app">
+    <!-- header with title + language toggle -->
+    <div class="header">
+        <h1 id="header-title">⏱️ Timestamp Converter</h1>
+        <div class="lang-toggle">
+            <button class="lang-btn active" id="btn-en" data-lang="en">English</button>
+            <button class="lang-btn" id="btn-zh" data-lang="zh">中文</button>
+        </div>
+    </div>
+
+    <!-- main input area -->
+    <div class="input-section">
+        <div class="input-row">
+            <input type="text" id="input-field" placeholder="Enter timestamp or date... (e.g. 1704038400 or 2025-03-13 10:00:00)">
+            <button id="convert-btn">Convert</button>
+        </div>
+        <div class="timezone-row">
+            <label id="timezone-label">🌐 Timezone</label>
+            <select id="timezone-select">
+                <option value="Asia/Shanghai" selected>Asia/Shanghai (Beijing, China)</option>
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">America/New_York (Eastern)</option>
+                <option value="Europe/London">Europe/London (GMT/BST)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo</option>
+                <option value="Australia/Sydney">Australia/Sydney</option>
+                <option value="Europe/Paris">Europe/Paris</option>
+                <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- result display with copy button -->
+    <div class="result-area">
+        <div class="result-text">
+            <span class="result-label" id="result-label">Date/Time: </span>
+            <span class="result-value" id="result-value">—</span>
+        </div>
+        <button class="copy-btn" id="copy-btn">📋 Copy</button>
+    </div>
+    <div class="footer-note" id="footer-note">
+        💡 supports seconds / milliseconds · auto‑detect · timezone‑aware
+    </div>
+</div>
+
+<script>
+    (function() {
+        // --- i18n dictionary (EN / ZH) ---
+        const i18n = {
+            en: {
+                headerTitle: '⏱️ Timestamp Converter',
+                inputPlaceholder: 'Enter timestamp or date... (e.g. 1704038400 or 2025-03-13 10:00:00)',
+                timezoneLabel: '🌐 Timezone',
+                convertBtn: 'Convert',
+                copyBtn: '📋 Copy',
+                dateLabel: 'Date/Time: ',
+                timestampLabel: 'Timestamp (ms): ',
+                errorLabel: '⚠️ Error: ',
+                footerNote: '💡 supports seconds / milliseconds · auto‑detect · timezone‑aware',
+                copiedTooltip: '✅ Copied!',
+                invalidNumber: 'Invalid numeric timestamp',
+                invalidDate: 'Invalid date format',
+            },
+            zh: {
+                headerTitle: '⏱️ 时间戳转换器',
+                inputPlaceholder: '输入时间戳或日期... (例如 1704038400 或 2025-03-13 10:00:00)',
+                timezoneLabel: '🌐 时区',
+                convertBtn: '转换',
+                copyBtn: '📋 复制',
+                dateLabel: '日期时间：',
+                timestampLabel: '时间戳（毫秒）：',
+                errorLabel: '⚠️ 错误：',
+                footerNote: '💡 支持秒/毫秒 · 自动识别 · 时区转换',
+                copiedTooltip: '✅ 已复制！',
+                invalidNumber: '无效的数字时间戳',
+                invalidDate: '无效的日期格式',
+            }
+        };
+
+        // --- DOM elements ---
+        const headerTitle = document.getElementById('header-title');
+        const inputField = document.getElementById('input-field');
+        const convertBtn = document.getElementById('convert-btn');
+        const timezoneSelect = document.getElementById('timezone-select');
+        const resultLabel = document.getElementById('result-label');
+        const resultValue = document.getElementById('result-value');
+        const copyBtn = document.getElementById('copy-btn');
+        const footerNote = document.getElementById('footer-note');
+        const btnEn = document.getElementById('btn-en');
+        const btnZh = document.getElementById('btn-zh');
+        const timezoneLabel = document.getElementById('timezone-label');
+
+        // --- state ---
+        let currentLang = 'en';               // default english
+        let lastInput = '';                   // store last converted input
+        let lastTz = timezoneSelect.value;     // store last used timezone
+        let lastResultType = null;             // 'date' or 'timestamp' or 'error'
+
+        // --- helper: update UI texts according to language ---
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = i18n[lang];
+
+            headerTitle.innerText = t.headerTitle;
+            inputField.placeholder = t.inputPlaceholder;
+            timezoneLabel.innerText = t.timezoneLabel;
+            convertBtn.innerText = t.convertBtn;
+            copyBtn.innerText = t.copyBtn;
+            footerNote.innerText = t.footerNote;
+
+            // update active class on language buttons
+            if (lang === 'en') {
+                btnEn.classList.add('active');
+                btnZh.classList.remove('active');
+            } else {
+                btnZh.classList.add('active');
+                btnEn.classList.remove('active');
+            }
+
+            // refresh result label based on last result type (if any)
+            if (lastResultType === 'date') {
+                resultLabel.innerText = t.dateLabel;
+            } else if (lastResultType === 'timestamp') {
+                resultLabel.innerText = t.timestampLabel;
+            } else if (lastResultType === 'error') {
+                resultLabel.innerText = t.errorLabel;
+            } else {
+                resultLabel.innerText = t.dateLabel; // fallback
+            }
+
+            // if there's a last input and we have a result, we may want to keep the textual value.
+            // but label language is updated above, value remains untouched.
+        }
+
+        // --- detect if string is numeric (integer, negative allowed) ---
+        function isNumeric(str) {
+            return /^-?\d+$/.test(str.trim());
+        }
+
+        // --- core conversion logic ---
+        function performConversion() {
+            const rawInput = inputField.value.trim();
+            const tz = timezoneSelect.value;
+            // store for language toggle re-use
+            lastInput = rawInput;
+            lastTz = tz;
+
+            if (rawInput === '') {
+                // empty: show friendly blank
+                resultLabel.innerText = i18n[currentLang].dateLabel; // default
+                resultValue.innerText = '—';
+                resultValue.className = 'result-value';
+                lastResultType = null;
+                return;
+            }
+
+            const t = i18n[currentLang];
+
+            // CASE 1: numeric -> treat as timestamp
+            if (isNumeric(rawInput)) {
+                let num = Number(rawInput);
+                // heuristic: seconds vs milliseconds
+                // if absolute value > 1e11 (100 billions) or string length > 11 => treat as ms, else seconds
+                const absNum = Math.abs(num);
+                let millis;
+                if (absNum > 1e11 || rawInput.length >= 13) {
+                    millis = num; // assume already ms
+                } else {
+                    millis = num * 1000; // seconds to ms
+                }
+
+                const momentObj = moment.tz(millis, tz);
+                if (!momentObj.isValid()) {
+                    // invalid timestamp range
+                    resultLabel.innerText = t.errorLabel;
+                    resultValue.innerText = t.invalidNumber;
+                    resultValue.className = 'result-value error-value';
+                    lastResultType = 'error';
+                } else {
+                    const formatted = momentObj.format('YYYY-MM-DD HH:mm:ss.SSS');
+                    resultLabel.innerText = t.dateLabel;
+                    resultValue.innerText = formatted;
+                    resultValue.className = 'result-value';
+                    lastResultType = 'date';
+                }
+            }
+            // CASE 2: non-numeric -> treat as date string
+            else {
+                const parsed = moment.tz(rawInput, tz);
+                if (!parsed.isValid()) {
+                    resultLabel.innerText = t.errorLabel;
+                    resultValue.innerText = t.invalidDate;
+                    resultValue.className = 'result-value error-value';
+                    lastResultType = 'error';
+                } else {
+                    const timestampMs = parsed.valueOf();
+                    resultLabel.innerText = t.timestampLabel;
+                    resultValue.innerText = timestampMs.toString();
+                    resultValue.className = 'result-value';
+                    lastResultType = 'timestamp';
+                }
+            }
+        }
+
+        // --- copy to clipboard ---
+        function copyResult() {
+            const textToCopy = resultValue.innerText;
+            if (!textToCopy || textToCopy === '—' || textToCopy.includes(i18n[currentLang].invalidNumber) || textToCopy.includes(i18n[currentLang].invalidDate)) {
+                return; // nothing meaningful to copy
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // visual feedback on copy button
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = i18n[currentLang].copiedTooltip;
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = i18n[currentLang].copyBtn;
+                    copyBtn.classList.remove('copied');
+                }, 1500);
+            }).catch(() => {
+                alert('Copy failed, you can manually select the text.');
+            });
+        }
+
+        // --- refresh conversion when language changes, keeping last input/zone ---
+        function reConvertWithLast() {
+            if (lastInput !== undefined && lastInput !== '') {
+                // temporarily set the input field to lastInput (it already should be the same, but ensure)
+                inputField.value = lastInput;
+                // ensure select has lastTz
+                timezoneSelect.value = lastTz;
+                // run conversion again (will use current language)
+                performConversion();
+            } else {
+                // if no previous conversion, just reset label to default language
+                resultLabel.innerText = i18n[currentLang].dateLabel;
+                resultValue.innerText = '—';
+                resultValue.className = 'result-value';
+                lastResultType = null;
+            }
+        }
+
+        // --- event listeners ---
+        convertBtn.addEventListener('click', () => {
+            performConversion();
+        });
+
+        // allow Enter key in input
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performConversion();
+            }
+        });
+
+        copyBtn.addEventListener('click', copyResult);
+
+        // language toggle
+        btnEn.addEventListener('click', () => {
+            if (currentLang === 'en') return;
+            setLanguage('en');
+            reConvertWithLast();
+        });
+
+        btnZh.addEventListener('click', () => {
+            if (currentLang === 'zh') return;
+            setLanguage('zh');
+            reConvertWithLast();
+        });
+
+        // optional: if timezone changes and there's already input, we could re-convert automatically? 
+        // not required by spec, but improves UX. Let's do it.
+        timezoneSelect.addEventListener('change', () => {
+            if (lastInput && lastInput !== '') {
+                // update lastTz, then convert
+                lastTz = timezoneSelect.value;
+                performConversion();
+            }
+        });
+
+        // --- initialise everything (default english) ---
+        setLanguage('en');
+        // set a fresh demo conversion? leave empty placeholder
+        inputField.value = '';
+        resultValue.innerText = '—';
+        lastResultType = null;
+        // store a sample placeholder but not converted
+        lastInput = '';
+    })();
+</script>
+</body>
+</html>
